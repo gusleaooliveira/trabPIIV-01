@@ -1,6 +1,8 @@
 const Usuario = require('../model/usuario');
+const jwt = require("jsonwebtoken");
 
-exports.listar = (req, res, next) => {
+
+exports.listar = (req, res) => {
     Usuario.find({}, (err, usuario) => {
         if(err) {
             console.error(err);
@@ -8,10 +10,9 @@ exports.listar = (req, res, next) => {
         }
         res.send(usuario);
     });
-    next();
 }
 
-exports.inserir = (req, res, next) => {
+exports.inserir = (req, res) => {
     let novoUsuario = new Usuario(req.body);
     novoUsuario.save((err, usuario) => {
         if(err){
@@ -20,10 +21,9 @@ exports.inserir = (req, res, next) => {
         }
         res.status(201).json(usuario);
     });
-    next();
 }
 
-exports.atualizar = (req, res, next) => {
+exports.atualizar = (req, res) => {
     let id = req.params.id;
     let usuarioAtualizar = req.body;
     Usuario.findOneAndUpdate({ _id: id }, usuarioAtualizar, { new: true }, (err, usuarioAtual) => {
@@ -33,10 +33,9 @@ exports.atualizar = (req, res, next) => {
         }
         res.json(usuarioAtual);
     });
-    next();
 }
 
-exports.deletar = (req, res, next) => {
+exports.deletar = (req, res) => {
     let id = req.params.id;
     Usuario.findByIdAndDelete({ _id: id }, (err, usuarioAtual) => {
         if(err) {
@@ -45,10 +44,9 @@ exports.deletar = (req, res, next) => {
         }
         res.json(usuarioAtual);
     });
-    next();
 }
 
-exports.buscarPorId =  (req, res, next) => {
+exports.buscarPorId =  (req, res) => {
     let id = req.params.id;
     Usuario.findById(id, (err, usuario) => {
         if(err){
@@ -57,10 +55,9 @@ exports.buscarPorId =  (req, res, next) => {
         }
         res.json(usuario);
     });
-    next();
 }
 
-exports.procurar = (req, res, next) => {
+exports.procurar = (req, res) => {
     if(req.query && req.query.nome){
         let paramNome = req.query.nome;
         Usuario.find({nome: paramNome}, (err, usuario) => {
@@ -71,5 +68,26 @@ exports.procurar = (req, res, next) => {
             res.json(usuario);
         });
     }
-    next();
+}
+
+
+exports.login = (req, res) => {
+    Usuario.findOne({
+        email: req.body.email,
+        senha: req.body.senha
+    },  (err, usuario) =>{
+        if(err){
+            console.error(err);
+            res.redirect("/view/login");
+            // res.status(500).send(err);
+        }
+        if(usuario){
+            let token = jwt.sign({usuario}, process.env.SECRET, {expiresIn: 300});
+            res.cookie('token', token, {signed: true}).redirect("/view/administrador");
+        }
+        else {
+            res.redirect("/view/login");
+        }
+    });
+    
 }

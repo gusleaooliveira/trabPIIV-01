@@ -1,3 +1,4 @@
+let categoria = require('./categoria');
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
@@ -8,7 +9,10 @@ const PacoteSchema =  new Schema({
     descricao: String,
     comandoInstalar: String,
     comandoApagar: String,
-    versao: String
+    versao: String,
+    categoria: [
+        { type: mongoose.Schema.Types.ObjectId, ref: 'Categoria' }
+    ]
 }, {
     versionKey: false
 });
